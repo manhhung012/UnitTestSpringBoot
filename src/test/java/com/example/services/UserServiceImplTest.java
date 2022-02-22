@@ -102,10 +102,12 @@ class UserServiceImplTest {
         uF.setId(12);
         uF.setFullName("Hai");
         uF.setPhone("0817953779");
+
         User u = new User();
         u.setId(12);
         u.setFullName("Hung");
         u.setPhone("0825405779");
+
         when(userDao.findById(any())).thenReturn(Optional.of(u));
 
         String result = userService.updateUser(uF, 12).getBody().getStatus();
@@ -128,7 +130,6 @@ class UserServiceImplTest {
 
     @Test
     void testDeleteUserWhenCannotFindUser() {
-
         when(userDao.existsById(any())).thenReturn(false);
 
         String result = userService.deleteUser(any()).getBody().getStatus();
