@@ -22,7 +22,7 @@ public class UserController {
     }
 
     @GetMapping("/getUserById/{id}")
-    public Optional<User> getUserById(@PathVariable Integer id){
+    public Optional<User> getUserById(@PathVariable Integer id) {
         return userService.getUserById(id);
     }
 
@@ -33,7 +33,7 @@ public class UserController {
 
     @PutMapping("/updateUser/{id}")
     public ResponseEntity<ResponseObject> updateUser(@RequestBody User userForm, @PathVariable Integer id) {
-        return userService.updateUser(userForm,id);
+        return userService.updateUser(userForm, id);
     }
 
     @DeleteMapping("/deleteUser/{id}")

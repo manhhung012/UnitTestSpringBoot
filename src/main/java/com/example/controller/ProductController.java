@@ -22,12 +22,12 @@ public class ProductController {
     }
 
     @GetMapping("/getProductById/{id}")
-    public Optional<Product> getProductById(@PathVariable Integer id){
+    public Optional<Product> getProductById(@PathVariable Integer id) {
         return productService.getProductById(id);
     }
 
     @DeleteMapping("/deletePro/{id}")
     public ResponseEntity<ResponseObject> deleteProduct(@PathVariable Integer id) {
-       return productService.deleteProduct(id);
+        return productService.deleteProduct(id);
     }
 }
