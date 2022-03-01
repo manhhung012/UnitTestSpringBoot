@@ -1,13 +1,16 @@
 package com.example.services;
 
 import com.example.dao.UserDao;
-import com.example.model.ResponseObject;
-import com.example.model.User;
+import com.example.exception.FailedException;
+import com.example.exception.NotFoundException;
+import com.example.entity.User;
+import com.example.model.dto.UserDto;
+import com.example.model.mapper.UserMapper;
+import com.example.model.validation.UserValid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,8 +21,14 @@ public class UserServiceImpl implements UserService {
     UserDao userDao;
 
     @Override
-    public List<User> getAllUser() {
-        return userDao.findAll();
+    public List<UserDto> getAllUser() {
+        List<UserDto> listUserDto = new ArrayList<>();
+        List<User> listUser = userDao.findAll();
+        for (User u : listUser) {
+            UserDto uD = UserMapper.userToDto(u);
+            listUserDto.add(uD);
+        }
+        return listUserDto;
     }
 
     @Override
@@ -28,41 +37,39 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public ResponseEntity<ResponseObject> createUser(User user) {
-        List<User> listName = userDao.findByFullName(user.getFullName());
-        if (!listName.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                    new ResponseObject("Failed", "User name already taken", "")
-            );
+    public String createUser(UserValid userValid) {
+        Optional<User> checkId = userDao.findById(userValid.getId());
+        if (!checkId.isPresent()) {
+            UserMapper.userToDto(userDao.save(UserMapper.userFromValid(userValid)));
+            return "Create user successfully";
         } else {
-            return ResponseEntity.status(HttpStatus.OK).body(
-                    new ResponseObject("OK", "Create User successfully", userDao.save(user))
-            );
+            throw new NotFoundException("Id user already taken");
         }
     }
 
     @Override
-    public ResponseEntity<ResponseObject> updateUser(User userForm, Integer id) {
+    public String updateUser(UserValid userForm, Integer id) {
         userDao.findById(id).map(user -> {
                     user.setFullName(userForm.getFullName());
                     user.setPhone(userForm.getPhone());
-                    return userDao.save(user);
+                    userDao.save(user);
+                    return "Update user successfully";
                 })
                 .orElseGet(() -> {
                     userForm.setId(id);
-                    return userDao.save(userForm);
+                    userDao.save(UserMapper.userFromValid(userForm));
+                    return "Insert user successfully";
                 });
-
-        return ResponseEntity.status(HttpStatus.OK).body(new ResponseObject("OK", "Update User successfully", ""));
+        throw new FailedException("Failed query");
     }
 
     @Override
-    public ResponseEntity<ResponseObject> deleteUser(Integer id) {
+    public String deleteUser(Integer id) {
         boolean exists = userDao.existsById(id);
         if (exists) {
-            return ResponseEntity.status(HttpStatus.OK).body(new ResponseObject("OK", "Delete User successfully", ""));
+            return "Delete User successfully";
         } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ResponseObject("Failed", "Cannot find User to delete", ""));
+            throw new NotFoundException("Cannot find User to delete");
         }
     }
 }
